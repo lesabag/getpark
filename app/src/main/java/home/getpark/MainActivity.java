@@ -206,7 +206,7 @@ public class MainActivity extends Activity {
                 } catch (IOException ex) {
                     msg = "Error :" + ex.getMessage();
                 }
-                Log.d(TAG, "+sendRegistrationIdToBackend(), msg = " + msg);
+                Log.d(TAG, "sendRegistrationIdToBackend(), msg = " + msg);
                 return msg;
             }
 
