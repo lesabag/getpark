@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
-import com.firebase.client.Firebase.AuthResultHandler;
 import com.firebase.client.FirebaseError;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -54,6 +52,9 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
         context = getApplicationContext();
 
+        // FIREBASE instance Authentication
+        final Firebase ref = new Firebase(Constants.FIREBASE_URL);
+
         // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
         if (checkPlayServices()) {
 
@@ -64,7 +65,7 @@ public class LoginActivity extends Activity {
                 registerInBackground();
             } else {
                 Log.i(TAG, "registration id = " + regid);
-//                signUpText.setText(regid);
+                setRegid(regid);
             }
 
         } else {
@@ -74,8 +75,6 @@ public class LoginActivity extends Activity {
         password = (EditText) findViewById(R.id.passwordField);
         email = (EditText) findViewById(R.id.emailField);
         login = (Button) findViewById(R.id.loginButton);
-        // FIREBASE instance Authentication
-        final Firebase ref = new Firebase(Constants.FIREBASE_URL);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,8 +98,9 @@ public class LoginActivity extends Activity {
                             // Authenticated successfully with payload authData
                             Map<String, Object> map = new HashMap<String, Object>();
                             map.put("email", emailAddress);
-                            ref.child("users").child(authData.getUid()).setValue(map);
-                            Toast.makeText(context, "YOU ARE LOGGED IN", Toast.LENGTH_LONG).show();
+                            map.put("regId", getRegid());
+                            ref.child("users").child(authData.getUid()).setValue(map);//AuthData object contains unique information about the logged in user.
+                            SearchforParkActivity();
                         }
 
                         @Override
@@ -140,7 +140,14 @@ public class LoginActivity extends Activity {
          */
     }
 
-            private void registerInBackground() {
+    private void SearchforParkActivity() {
+        Intent intent = new Intent(this, SearchParkActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    private void registerInBackground() {
 
                 new AsyncTask<Void, Void, String>() {
                     @Override
@@ -272,4 +279,12 @@ public class LoginActivity extends Activity {
                     }
                 }.execute(null, null, null);
             }
+
+    public String getRegid() {
+        return regid;
+    }
+
+    public void setRegid( String registrationId) {
+        registrationId = regid.toString().trim();
+    }
 }
