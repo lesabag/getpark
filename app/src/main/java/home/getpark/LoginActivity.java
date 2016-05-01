@@ -61,7 +61,7 @@ public class LoginActivity extends Activity {
             regid = getRegistrationId(context);
 
             if (regid.isEmpty()) {
-                //registerInBackground();
+                registerInBackground();
             } else {
                 Log.i(TAG, "registration id = " + regid);
 //                signUpText.setText(regid);
@@ -76,10 +76,6 @@ public class LoginActivity extends Activity {
         login = (Button) findViewById(R.id.loginButton);
         // FIREBASE instance Authentication
         final Firebase ref = new Firebase(Constants.FIREBASE_URL);
-
-        if (ref.getAuth() == null) {
-            Toast.makeText(context, "Welcome :-) ", Toast.LENGTH_SHORT).show();
-        }
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,6 +125,19 @@ public class LoginActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+        /*
+        reset password:
+        ref.resetPassword({
+          email : "bobtony@firebase.com"
+        }, function(error) {
+          if (error === null) {
+            console.log("Password reset email sent successfully");
+          } else {
+            console.log("Error sending password reset email:", error);
+          }
+        });
+         */
     }
 
             private void registerInBackground() {
@@ -263,12 +272,4 @@ public class LoginActivity extends Activity {
                     }
                 }.execute(null, null, null);
             }
-
-//    private void loadLoginView() {
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        startActivity(intent);
-//    }}
-
 }
