@@ -149,142 +149,142 @@ public class LoginActivity extends Activity {
 
     private void registerInBackground() {
 
-                new AsyncTask<Void, Void, String>() {
-                    @Override
-                    protected String doInBackground(Void... params) {
-                        String msg = "";
-                        try {
-                            if (gcm == null) {
-                                gcm = GoogleCloudMessaging.getInstance(context);
-                            }
-                            regid = gcm.register(SENDER_ID);
-                            msg = "Device registered, registration ID=" + regid;
-
-                            // You should send the registration ID to your server over HTTP, so it
-                            // can use GCM/HTTP or CCS to send messages to your app.
-                            sendRegistrationIdToBackend();
-
-                            // For this demo: we don't need to send it because the device will send
-                            // upstream messages to a server that echo back the message using the
-                            // 'from' address in the message.
-
-                            // Persist the regID - no need to register again.
-                            storeRegistrationId(context, regid);
-                        } catch (IOException ex) {
-                            msg = "Error :" + ex.getMessage();
-                            // If there is an error, don't just keep trying to register.
-                            // Require the user to click a button again, or perform
-                            // exponential back-off.
-                        }
-                        return msg;
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(context);
                     }
+                    regid = gcm.register(SENDER_ID);
+                    msg = "Device registered, registration ID=" + regid;
 
-                    @Override
-                    protected void onPostExecute(String msg) {
-                        // mDisplay.append(msg + "\n");
-                    }
-                }.execute(null, null, null);
-            }
+                    // You should send the registration ID to your server over HTTP, so it
+                    // can use GCM/HTTP or CCS to send messages to your app.
+                    sendRegistrationIdToBackend();
 
-            private void storeRegistrationId(Context context, String regId) {
-                final SharedPreferences prefs = getGcmPreferences(context);
-                Log.i(TAG, "Saving regId on app version " + appVersion);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString(PROPERTY_REG_ID, regId);
-                editor.putInt(PROPERTY_APP_VERSION, appVersion);
-                editor.commit();
-            }
+                    // For this demo: we don't need to send it because the device will send
+                    // upstream messages to a server that echo back the message using the
+                    // 'from' address in the message.
 
-            private String getRegistrationId(Context context) {
-                final SharedPreferences prefs = getGcmPreferences(context);
-
-                String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-                if (registrationId.isEmpty()) {
-                    Log.i(TAG, "Registration not found.");
-                    return "";
+                    // Persist the regID - no need to register again.
+                    storeRegistrationId(context, regid);
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                    // If there is an error, don't just keep trying to register.
+                    // Require the user to click a button again, or perform
+                    // exponential back-off.
                 }
-                // Check if app was updated; if so, it must clear the registration ID
-                // since the existing regID is not guaranteed to work with the new
-                // app version.
-                int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-
-                return registrationId;
+                return msg;
             }
 
             @Override
-            protected void onResume() {
-                super.onResume();
-                // Check device for Play Services APK.
-                checkPlayServices();
+            protected void onPostExecute(String msg) {
+                // mDisplay.append(msg + "\n");
             }
+        }.execute(null, null, null);
+    }
 
-            private boolean checkPlayServices() {
+    private void storeRegistrationId(Context context, String regId) {
+        final SharedPreferences prefs = getGcmPreferences(context);
+        Log.i(TAG, "Saving regId on app version " + appVersion);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_REG_ID, regId);
+        editor.putInt(PROPERTY_APP_VERSION, appVersion);
+        editor.commit();
+    }
 
-                int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+    private String getRegistrationId(Context context) {
+        final SharedPreferences prefs = getGcmPreferences(context);
 
-                if (resultCode != ConnectionResult.SUCCESS) {
+        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+        if (registrationId.isEmpty()) {
+            Log.i(TAG, "Registration not found.");
+            return "";
+        }
+        // Check if app was updated; if so, it must clear the registration ID
+        // since the existing regID is not guaranteed to work with the new
+        // app version.
+        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
 
-                    if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+        return registrationId;
+    }
 
-                        GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check device for Play Services APK.
+        checkPlayServices();
+    }
 
-                    } else {
-                        Log.i(TAG, "This device is not supported.");
-                        finish();
-                    }
-                    return false;
+    private boolean checkPlayServices() {
+
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+        if (resultCode != ConnectionResult.SUCCESS) {
+
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private SharedPreferences getGcmPreferences(Context context) {
+        // This sample app persists the registration ID in shared preferences, but
+        // how you store the regID in your app is up to you.
+        return getSharedPreferences(LoginActivity.class.getSimpleName(),
+                Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP or CCS to send
+     * messages to your app. Not needed for this demo since the device sends upstream messages
+     * to a server that echoes back the message using the 'from' address in the message.
+     */
+    private void sendRegistrationIdToBackend() {
+        Log.d(TAG, "+sendRegistrationIdToBackend()");
+
+        new AsyncTask<String, Void, String>() {
+            @Override
+            protected String doInBackground(String... params) {
+                String msg = "";
+                try {
+                    Bundle data = new Bundle();
+                    data.putString("my_message", "Hello World");
+                    data.putString("my_action",
+                            "com.google.android.gcm.demo.app.ECHO_NOW");
+                    String id = Integer.toString(msgId.incrementAndGet());
+                    gcm.send(SENDER_ID + "@gcm.googleapis.com", id, data);
+                    msg = "Message from " + SENDER_ID + " sent to server";
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
                 }
-
-                return true;
+                Log.d(TAG, "sendRegistrationIdToBackend(), msg = " + msg);
+                return msg;
             }
 
-            private SharedPreferences getGcmPreferences(Context context) {
-                // This sample app persists the registration ID in shared preferences, but
-                // how you store the regID in your app is up to you.
-                return getSharedPreferences(LoginActivity.class.getSimpleName(),
-                        Context.MODE_PRIVATE);
-            }
-
-            /**
-             * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP or CCS to send
-             * messages to your app. Not needed for this demo since the device sends upstream messages
-             * to a server that echoes back the message using the 'from' address in the message.
-             */
-            private void sendRegistrationIdToBackend() {
-                Log.d(TAG, "+sendRegistrationIdToBackend()");
-
-                new AsyncTask<String, Void, String>() {
-                    @Override
-                    protected String doInBackground(String... params) {
-                        String msg = "";
-                        try {
-                            Bundle data = new Bundle();
-                            data.putString("my_message", "Hello World");
-                            data.putString("my_action",
-                                    "com.google.android.gcm.demo.app.ECHO_NOW");
-                            String id = Integer.toString(msgId.incrementAndGet());
-                            gcm.send(SENDER_ID + "@gcm.googleapis.com", id, data);
-                            msg = "Message from " + SENDER_ID + " sent to server";
-                        } catch (IOException ex) {
-                            msg = "Error :" + ex.getMessage();
-                        }
-                        Log.d(TAG, "sendRegistrationIdToBackend(), msg = " + msg);
-                        return msg;
-                    }
-
-                    @Override
-                    protected void onPostExecute(String msg) {
+            @Override
+            protected void onPostExecute(String msg) {
 //                signUpText.append("\n" + msg + "\n");
-                        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
-                    }
-                }.execute(null, null, null);
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
             }
+        }.execute(null, null, null);
+    }
 
     public String getRegid() {
         return regid;
     }
 
-    public void setRegid( String registrationId) {
+    public void setRegid(String registrationId) {
         registrationId = regid.toString().trim();
     }
 }

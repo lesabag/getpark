@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">GetPark</string>
+<<<<<<< HEAD
+=======
+    <string name="app_name">GetPark</string>
+>>>>>>> 20dbb727aa514df30c99a945feb6d836a950e99d
     <string name="password_hint">Password</string>
     <string name="email_hint">Email</string>
     <string name="sign_up_button_label">Sign Up</string>
