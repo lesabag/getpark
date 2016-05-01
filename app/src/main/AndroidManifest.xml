@@ -49,18 +49,13 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-<<<<<<< HEAD
-
-=======
->>>>>>> 20dbb727aa514df30c99a945feb6d836a950e99d
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".SignUpActivity" />
-<<<<<<< HEAD
         <activity android:name=".SearchParkActivity"></activity>
-=======
->>>>>>> 20dbb727aa514df30c99a945feb6d836a950e99d
+
     </application>
 
 </manifest>
