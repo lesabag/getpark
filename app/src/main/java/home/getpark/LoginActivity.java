@@ -74,6 +74,8 @@ public class LoginActivity extends Activity {
 
         password = (EditText) findViewById(R.id.passwordField);
         email = (EditText) findViewById(R.id.emailField);
+        User user = new User("name", email.toString().trim(), password.toString().trim(), "address", "apartment", "parkingNum");
+
         login = (Button) findViewById(R.id.loginButton);
 
         login.setOnClickListener(new View.OnClickListener() {
