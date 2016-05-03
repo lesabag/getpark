@@ -7,7 +7,10 @@ import android.os.Bundle;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends ActionBarActivity {
 
     static final String TAG = "GetPark";
     public static final String EXTRA_MESSAGE = "message";
