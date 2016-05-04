@@ -4,13 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.Window;
 
 import com.firebase.client.Firebase;
-import com.google.android.gms.plus.Plus;
-
 
 public class MainActivity extends Activity {
 

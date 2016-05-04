@@ -1,22 +1,26 @@
 package home.getpark;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
-import android.os.Bundle;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.Profile;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -45,18 +49,43 @@ public class LoginActivity extends ActionBarActivity {
     TextView signUpText; // redirect to signUp page
     EditText password, email;
     Button login;
-
+    LoginButton fbLoginButton; //FB button
     String SENDER_ID = "672402448478"; // project number
     String regid; //RegistrationId from GCM server
+    CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         context = getApplicationContext();
-
         // FIREBASE instance Authentication
         final Firebase ref = new Firebase(Constants.FIREBASE_URL);
+        callbackManager = CallbackManager.Factory.create();
+        fbLoginButton = (LoginButton) findViewById(R.id.fb_login_button);
+        // Callback registration
+        //To respond to a login result, you need to register a callback
+        fbLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                // App code
+                //If login succeeds, the LoginResult parameter has the new AccessToken, and the most recently granted or declined permissions.
+                AccessToken accessToken = AccessToken.getCurrentAccessToken();
+                Profile profile = Profile.getCurrentProfile();
+                Log.d(TAG, "User token = " + accessToken + " User profile = " + profile);
+                SearchforParkActivity();
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "Callback registration cancelled");
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                // App code
+            }
+        });
 
         // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
         if (checkPlayServices()) {
@@ -74,7 +103,6 @@ public class LoginActivity extends ActionBarActivity {
         } else {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
-
         password = (EditText) findViewById(R.id.passwordField);
         email = (EditText) findViewById(R.id.emailField);
         User user = new User("name", email.toString().trim(), password.toString().trim(), "address", "apartment", "parkingNum");
@@ -143,6 +171,12 @@ public class LoginActivity extends ActionBarActivity {
           }
         });
          */
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private void SearchforParkActivity() {
