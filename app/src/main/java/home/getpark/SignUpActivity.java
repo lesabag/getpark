@@ -18,6 +18,8 @@ public class SignUpActivity extends AppCompatActivity {
     protected EditText emailEditText;
     protected Button signUpButton;
 
+    Firebase mFirebaseRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,7 +29,7 @@ public class SignUpActivity extends AppCompatActivity {
         emailEditText = (EditText)findViewById(R.id.emailField);
         signUpButton = (Button)findViewById(R.id.signupButton);
 
-        final Firebase ref = new Firebase(Constants.FIREBASE_URL);
+        mFirebaseRef = new Firebase(Constants.FIREBASE_URL_USERS);
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,7 +50,7 @@ public class SignUpActivity extends AppCompatActivity {
                 } else {
 
                     // signup
-                    ref.createUser(email, password, new Firebase.ResultHandler() {
+                    mFirebaseRef.createUser(email, password, new Firebase.ResultHandler() {
                         @Override
                         public void onSuccess() {
                             AlertDialog.Builder builder = new AlertDialog.Builder(SignUpActivity.this);

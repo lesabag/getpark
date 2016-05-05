@@ -16,7 +16,7 @@ import com.firebase.client.Firebase;
 
 public class SearchParkActivity extends AppCompatActivity {
 
-    private Firebase ref;
+    private Firebase mFirebaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

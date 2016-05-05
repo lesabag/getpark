@@ -1,6 +1,7 @@
 package home.getpark;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -35,14 +37,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LoginActivity extends ActionBarActivity {
 
-    static final String TAG = "GetPark";
+    static final String activityName = MainActivity.class.getSimpleName();
+    static final String TAG = "GetPark:" + activityName + "==>>";
     public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
     private static int appVersion = 1;
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    private Firebase ref;
+    private Firebase mFirebaseRef;
     GoogleCloudMessaging gcm;
     AtomicInteger msgId = new AtomicInteger();
     Context context;
@@ -53,6 +56,10 @@ public class LoginActivity extends ActionBarActivity {
     String SENDER_ID = "672402448478"; // project number
     String regid; //RegistrationId from GCM server
     CallbackManager callbackManager;
+    AccessToken accessToken;
+    private AccessTokenTracker mFacebookAccsesTokenTracker;
+   // private ProgressDialog mAuthProgressDialog;
+    private Firebase.AuthStateListener mAuthStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +67,7 @@ public class LoginActivity extends ActionBarActivity {
         setContentView(R.layout.activity_login);
         context = getApplicationContext();
         // FIREBASE instance Authentication
-        final Firebase ref = new Firebase(Constants.FIREBASE_URL);
+        mFirebaseRef = new Firebase(Constants.FIREBASE_URL_USERS);
         callbackManager = CallbackManager.Factory.create();
         fbLoginButton = (LoginButton) findViewById(R.id.fb_login_button);
         // Callback registration
@@ -68,12 +75,12 @@ public class LoginActivity extends ActionBarActivity {
         fbLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                // App code
-                //If login succeeds, the LoginResult parameter has the new AccessToken, and the most recently granted or declined permissions.
-                AccessToken accessToken = AccessToken.getCurrentAccessToken();
+                //The LoginResult parameter has the new AccessToken, (and the most recently granted or declined permissions).
+                accessToken = AccessToken.getCurrentAccessToken();
                 Profile profile = Profile.getCurrentProfile();
                 Log.d(TAG, "User token = " + accessToken + " User profile = " + profile);
-                SearchforParkActivity();
+                LoginActivity.this.onFacebookAccessTokenChange(accessToken);
+               // SearchforParkActivity();
             }
 
             @Override
@@ -86,6 +93,28 @@ public class LoginActivity extends ActionBarActivity {
                 // App code
             }
         });
+
+        mFacebookAccsesTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+                Log.i(TAG, "+OnCurrentAccessTokenChanged()");
+                //LoginActivity.this.onFacebookAccessTokenChange(currentAccessToken);
+            }
+        };
+
+//        mAuthProgressDialog = new ProgressDialog(this);
+//        mAuthProgressDialog.setTitle("Loading");
+//        mAuthProgressDialog.setMessage("Authenticating with Firebase...");
+//        mAuthProgressDialog.setCancelable(false);
+
+
+//        mAuthStateListener = new Firebase.AuthStateListener() {
+//            @Override
+//            public void onAuthStateChanged(AuthData authData) {
+//                mAuthProgressDialog.hide();
+//                setAuthenticatedUser(authData);
+//            }
+//        };
 
         // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
         if (checkPlayServices()) {
@@ -125,14 +154,14 @@ public class LoginActivity extends ActionBarActivity {
                 } else {
                     final String emailAddress = emailText;
 
-                    ref.authWithPassword(emailText, passwordText, new Firebase.AuthResultHandler() {
+                    mFirebaseRef.authWithPassword(emailText, passwordText, new Firebase.AuthResultHandler() {
                         @Override
                         public void onAuthenticated(AuthData authData) {
                             // Authenticated successfully with payload authData
                             Map<String, Object> map = new HashMap<String, Object>();
                             map.put("email", emailAddress);
                             map.put("regId", getRegid());
-                            ref.child("users").child(authData.getUid()).setValue(map);//AuthData object contains unique information about the logged in user.
+                            mFirebaseRef.child("users").child(authData.getUid()).setValue(map);//AuthData object contains unique information about the logged in user.
                             SearchforParkActivity();
                         }
 
@@ -158,10 +187,9 @@ public class LoginActivity extends ActionBarActivity {
                 startActivity(intent);
             }
         });
-
         /*
         reset password:
-        ref.resetPassword({
+        mFirebaseRef.resetPassword({
           email : "bobtony@firebase.com"
         }, function(error) {
           if (error === null) {
@@ -171,6 +199,30 @@ public class LoginActivity extends ActionBarActivity {
           }
         });
          */
+    }
+
+    private void onFacebookAccessTokenChange(AccessToken token) {
+        Log.i(TAG, "+onFacebookAccessTokenChange() token = " + token);
+        if (token != null) {
+            //mAuthProgressDialog.show();
+            mFirebaseRef.authWithOAuthToken("facebook", token.getToken(), new Firebase.AuthResultHandler() {
+                @Override
+                public void onAuthenticated(AuthData authData) {
+                    Log.i(TAG, "The Facebook user is now authenticated with your Firebase app");
+                    //mAuthProgressDialog.hide();
+                    mFirebaseRef.child("users").setValue(authData.getAuth());
+                }
+
+                @Override
+                public void onAuthenticationError(FirebaseError firebaseError) {
+                    Log.i(TAG, "onAuthenticationError occurred");
+                    //mAuthProgressDialog.hide();
+                }
+            });
+        } else {
+            Log.i(TAG, " Logged out of Facebook so do a logout from the Firebase app ");
+            mFirebaseRef.unauth();
+        }
     }
 
     @Override

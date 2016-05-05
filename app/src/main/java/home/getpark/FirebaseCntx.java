@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
  * Created by liore on 4/27/2016.
  */
 public class FirebaseCntx extends Application {
-
+    static final String TAG = "GetPark";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -43,7 +43,7 @@ public class FirebaseCntx extends Application {
             for (Signature signature : info.signatures) {
                 MessageDigest md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
-                Log.d("getpark:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+                Log.d(TAG, Base64.encodeToString(md.digest(), Base64.DEFAULT));
             }
         } catch (PackageManager.NameNotFoundException e) {
 

@@ -10,7 +10,8 @@ import com.firebase.client.Firebase;
 
 public class MainActivity extends Activity {
 
-    private Firebase mRef;
+    private Firebase mFirebaseRef;
+    static final String TAG = "GetPark";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -18,9 +19,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // Check Authentication
-        mRef = new Firebase(Constants.FIREBASE_URL);
-        Log.i("MainActivity", "Check Authentication");
-        if (mRef.getAuth() == null) {
+        mFirebaseRef = new Firebase(Constants.FIREBASE_URL);
+        Log.i(TAG,"MainActivity():Check Authentication");
+        if (mFirebaseRef.getAuth() == null) {
             loadLoginView();
         } else {
             loadSearchParkActivityView();
@@ -28,7 +29,7 @@ public class MainActivity extends Activity {
     }
 
     private void loadLoginView() {
-        Log.i("MainActivity", "+loadLoginView()");
+        Log.i(TAG,"MainActivity():+loadLoginView()");
         Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -36,7 +37,7 @@ public class MainActivity extends Activity {
     }
 
     private void loadSearchParkActivityView() {
-        Log.i("MainActivity", "+loadLoginView()");
+        Log.i(TAG,"MainActivity():+loadLoginView()");
         Intent intent = new Intent(this, SearchParkActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
